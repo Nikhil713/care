@@ -22,7 +22,7 @@ class FacilityBaseModel(models.Model):
 
 # Facility Model Start
 
-ROOM_TYPES = [(1, "Normal"), (10, "ICU"), (20, "Ventilator")]
+ROOM_TYPES = [(0, "Total"), (1, "Normal"), (2, "Hostel"), (10, "ICU"), (20, "Ventilator")]
 
 FACILITY_TYPES = [(1, "Educational Inst"), (2, "Hospital"), (3, "Other")]
 
@@ -49,8 +49,9 @@ class Facility(FacilityBaseModel):
     facility_type = models.IntegerField(choices=FACILITY_TYPES)
     address = models.TextField()
     location = LocationField(based_fields=["address"], zoom=7, blank=True, null=True)
-    oxygen_capacity = models.IntegerField()
-    phone_number = models.CharField(max_length=14, validators=[phone_number_regex])
+    oxygen_capacity = models.IntegerField(default=0)
+    phone_number = models.CharField(max_length=14, blank=True, validators=[phone_number_regex])
+    corona_testing = models.BooleanField(default=False)
     created_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, blank=True
     )
@@ -73,7 +74,7 @@ class HospitalDoctors(FacilityBaseModel):
         return str(self.facility) + str(self.count)
 
     class Meta:
-        unique_together = ["facility", "area"]
+        unique_together = ["facility", "area", "deleted"]
 
 
 class FacilityCapacity(FacilityBaseModel):
@@ -85,7 +86,7 @@ class FacilityCapacity(FacilityBaseModel):
     current_capacity = models.IntegerField(default=0, validators=[MinValueValidator(0)])
 
     class Meta:
-        unique_together = ["facility", "room_type"]
+        unique_together = ["facility", "room_type", "deleted"]
 
 
 class FacilityStaff(FacilityBaseModel):
