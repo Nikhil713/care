@@ -2,8 +2,9 @@
 Base settings to build other settings files upon.
 """
 
-import environ
 from datetime import timedelta
+
+import environ
 
 ROOT_DIR = environ.Path(__file__) - 3  # (care/config/settings/base.py - 3 = care/)
 APPS_DIR = ROOT_DIR.path("care")
@@ -45,7 +46,6 @@ DATABASES = {"default": env.db("DATABASE_URL", default="postgis:///care")}
 DATABASES["default"]["ATOMIC_REQUESTS"] = True
 DATABASES["default"]["ENGINE"] = "django.contrib.gis.db.backends.postgis"
 
-
 # URLS
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#root-urlconf
@@ -55,7 +55,6 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 # CollectFast
 COLLECTFAST_STRATEGY = "collectfast.strategies.boto3.Boto3Strategy"
-
 
 # APPS
 # ------------------------------------------------------------------------------
@@ -83,6 +82,7 @@ THIRD_PARTY_APPS = [
     "drf_extra_fields",
     "location_field.apps.DefaultConfig",
     "django_filters",
+    "ratelimit",
 ]
 
 LOCAL_APPS = ["care.users.apps.UsersConfig", "care.facility"]
@@ -103,7 +103,6 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 ACCOUNT_FORMS = {"signup": "users.forms.CustomSignupForm"}
-
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#auth-user-model
 AUTH_USER_MODEL = "users.User"
@@ -270,7 +269,6 @@ LOGGING = {
     "root": {"level": "INFO", "handlers": ["console"]},
 }
 
-
 # django-allauth
 # ------------------------------------------------------------------------------
 ACCOUNT_ALLOW_REGISTRATION = env.bool("DJANGO_ACCOUNT_ALLOW_REGISTRATION", True)
@@ -284,7 +282,6 @@ ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_ADAPTER = "care.users.adapters.AccountAdapter"
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 SOCIALACCOUNT_ADAPTER = "care.users.adapters.SocialAccountAdapter"
-
 
 # Django Rest Framework
 # ------------------------------------------------------------------------------
@@ -311,7 +308,6 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 LOGOUT_REDIRECT_URL = "/"
 STAFF_ACCOUNT_TYPE = 10
 
-
 # Simple JWT
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(
@@ -322,9 +318,21 @@ SIMPLE_JWT = {
     ),
 }
 
-
 LOCATION_FIELD = {
     "search.provider": "google",
     "map.provider": "openstreetmap",
     "provider.openstreetmap.max_zoom": 18,
 }
+
+
+def GETKEY(group, request):
+    return "ratelimit"
+
+
+DJANGO_RATE_LIMIT = "5/10m"
+
+GOOGLE_RECAPTCHA_SECRET_KEY = env("GOOGLE_RECAPTCHA_SECRET_KEY", default="")
+
+GOOGLE_RECAPTCHA_SITE_KEY = env("GOOGLE_RECAPTCHA_SITE_KEY", default="")
+
+GOOGLE_CAPTCHA_POST_KEY = "g-recaptcha-response"
