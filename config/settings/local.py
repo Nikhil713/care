@@ -1,3 +1,5 @@
+import os
+
 from .base import *  # noqa
 from .base import env
 
@@ -7,6 +9,10 @@ from .base import env
 DEBUG = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
 SECRET_KEY = env("DJANGO_SECRET_KEY", default="eXZQzOzx8gV38rDG0Z0fFZWweUGl3LwMZ9aTKqJiXQTI0nKMh0Z7sbHfqT8KFEnd",)
+# The first key will be used to encrypt all new data, and decryption of existing values will be attempted
+# with all given keys in order. This is useful for key rotation: place a new key at the head of the list
+# for use with all new or changed data, but existing values encrypted with old keys will still be accessible
+FERNET_KEYS = [env("FERNET_SECRET_KEY_1", default="f685a83652d782188382a3f2696e623a764c8012b1488d2fc5bc6460cddc7878")]
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1", "*"]
 
@@ -45,6 +51,20 @@ INTERNAL_IPS = ["127.0.0.1", "10.0.2.2"]
 # ------------------------------------------------------------------------------
 # https://django-extensions.readthedocs.io/en/latest/installation_instructions.html#configuration
 INSTALLED_APPS += ["django_extensions"]  # noqa F405
+
+# Required for gis on windows platform
+# Make sure to install OSGeo4W from https://trac.osgeo.org/osgeo4w/
+if os.name == "nt":
+    import platform
+
+    OSGEO4W = r"C:\OSGeo4W"
+    if "64" in platform.architecture()[0]:
+        OSGEO4W += "64"
+    assert os.path.isdir(OSGEO4W), "Directory does not exist: " + OSGEO4W
+    os.environ["OSGEO4W_ROOT"] = OSGEO4W
+    os.environ["GDAL_DATA"] = OSGEO4W + r"\share\gdal"
+    os.environ["PROJ_LIB"] = OSGEO4W + r"\share\proj"
+    os.environ["PATH"] = OSGEO4W + r"\bin;" + os.environ["PATH"]
 
 # Your stuff...
 # ------------------------------------------------------------------------------
